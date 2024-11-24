@@ -1,2 +1,4 @@
 task.txt
 .venv
+data/emnist-balanced-train.csv
+data/emnist-balanced-test.csv
