@@ -10,14 +10,25 @@ PREPROCESSED_TEST_DF_PATH = "./data/preprocessed-test.csv"
 LOWER_BOUND_LETTER = 'M'
 UPPER_BOUND_LETTER = 'V'
 SHIFT = 48
-TRAINING_DF_LIMIT = 1000
-TESTING_DF_LIMIT = 200
+TRAINING_DF_LIMIT = 4000
+TESTING_DF_LIMIT = 800
 COLUMNS = ['class'] + [f'pixel {i}' for i in range(784)]
 
 LOWER_BOUND = ord(LOWER_BOUND_LETTER) - SHIFT
 UPPER_BOUND = ord(UPPER_BOUND_LETTER) - SHIFT
 
-def preprocess_df(df: pl.DataFrame, lower_bound: int, upper_bound: int, row_limit: int):
+def preprocess_df(df_path: str, lower_bound: int, upper_bound: int, row_limit: int, save_to_csv: bool = False, output_file: str = "./data/preprocessed_df.csv"):
+    # Read the CSV file, treating the first row as data, not headers
+    df = pl.read_csv(
+        df_path, 
+        has_header=False, 
+        new_columns=COLUMNS
+    )
+
+    df = df.with_columns((pl.col("class") + SHIFT).map_elements(chr, return_dtype=pl.String).alias("letter"))
+
+        
+    
     # Filter rows based on the class column (for letters M-V only)
     filtered_df = df.filter(
         (pl.col("class") >= lower_bound) & (pl.col("class") <= upper_bound)
@@ -62,51 +73,54 @@ def preprocess_df(df: pl.DataFrame, lower_bound: int, upper_bound: int, row_limi
 
     # Add the one-hot encoded array column to the dataframe
     one_hot_encoded_df = grouped_df.with_columns([one_hot_array_col])
-    print(one_hot_encoded_df.head())
+    # print(one_hot_encoded_df.head())
 
+    if save_to_csv:
+        one_hot_encoded_df.write_csv(output_file)
+    
     return one_hot_encoded_df
 
-# Read the CSV file, treating the first row as data, not headers
-emnist_letters_train_df = pl.read_csv(
-    TRAINING_DF_FILE_PATH, 
-    has_header=False, 
-    new_columns=COLUMNS
-)
+# # Read the CSV file, treating the first row as data, not headers
+# emnist_letters_train_df = pl.read_csv(
+#     TRAINING_DF_FILE_PATH, 
+#     has_header=False, 
+#     new_columns=COLUMNS
+# )
 
-emnist_letters_train_df = emnist_letters_train_df.with_columns((pl.col("class") + SHIFT).map_elements(chr, return_dtype=pl.String).alias("letter"))
+# emnist_letters_train_df = emnist_letters_train_df.with_columns((pl.col("class") + SHIFT).map_elements(chr, return_dtype=pl.String).alias("letter"))
 
-emnist_letters_test_df = pl.read_csv(
-    TESTING_DF_FILE_PATH, 
-    has_header=False, 
-    new_columns=COLUMNS
-)
+# emnist_letters_test_df = pl.read_csv(
+#     TESTING_DF_FILE_PATH, 
+#     has_header=False, 
+#     new_columns=COLUMNS
+# )
 
-emnist_letters_test_df = emnist_letters_test_df.with_columns((pl.col("class") + SHIFT).map_elements(chr, return_dtype=pl.String).alias("letter"))
+# emnist_letters_test_df = emnist_letters_test_df.with_columns((pl.col("class") + SHIFT).map_elements(chr, return_dtype=pl.String).alias("letter"))
 
-# Preprocess the training and testing DataFrames
-emnist_letters_train_df = preprocess_df(
-    df=emnist_letters_train_df,
-    lower_bound=LOWER_BOUND,
-    upper_bound=UPPER_BOUND,
-    row_limit=TRAINING_DF_LIMIT
-)
+# # Preprocess the training and testing DataFrames
+# emnist_letters_train_df = preprocess_df(
+#     df=emnist_letters_train_df,
+#     lower_bound=LOWER_BOUND,
+#     upper_bound=UPPER_BOUND,
+#     row_limit=TRAINING_DF_LIMIT
+# )
 
-emnist_letters_test_df = preprocess_df(
-    df=emnist_letters_test_df,
-    lower_bound=LOWER_BOUND,
-    upper_bound=UPPER_BOUND,
-    row_limit=TESTING_DF_LIMIT
-)
+# emnist_letters_test_df = preprocess_df(
+#     df=emnist_letters_test_df,
+#     lower_bound=LOWER_BOUND,
+#     upper_bound=UPPER_BOUND,
+#     row_limit=TESTING_DF_LIMIT
+# )
 
 # Print the grouped DataFrame (count rows per class)
 # emnist_letters_train_df = emnist_letters_train_df.group_by("class").agg(pl.len())
 # emnist_letters_test_df = emnist_letters_test_df.group_by("class").agg(pl.len())
 
-print("Training Data:")
-print(emnist_letters_train_df)
+# print("Training Data:")
+# print(emnist_letters_train_df)
 
-print("Testing Data:")
-print(emnist_letters_test_df)
+# print("Testing Data:")
+# print(emnist_letters_test_df)
 
-emnist_letters_train_df.write_csv(PREPROCESSED_TRAIN_DF_PATH)
-emnist_letters_test_df.write_csv(PREPROCESSED_TEST_DF_PATH)
+# emnist_letters_train_df.write_csv(PREPROCESSED_TRAIN_DF_PATH)
+# emnist_letters_test_df.write_csv(PREPROCESSED_TEST_DF_PATH)

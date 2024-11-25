@@ -1,8 +1,8 @@
 import numpy as np
-import polars as pl
 
 
 class NeuralNetwork:
+    
     def __init__(self, input_size, hidden_size, output_size):
         # Inicializácia váh a biasov pre každú vrstvu
         self.params = {
@@ -14,10 +14,13 @@ class NeuralNetwork:
 
     def forward(self, X):
         # Dopredné šírenie
+        # here we multiplicate the matrices and add bias to the outcome
         self.z1 = np.dot(X, self.params["w1"]) + self.params["b1"]  # Vstup do skrytej vrstvy
         self.a1 = self.sigmoid(self.z1)  # Aktivácia skrytej vrstvy
+
         self.z2 = np.dot(self.a1, self.params["w2"]) + self.params["b2"]  # Vstup do výstupnej vrstvy
         self.a2 = self.softmax(self.z2)  # Aktivácia výstupnej vrstvy
+        
         return self.a2
 
     @staticmethod

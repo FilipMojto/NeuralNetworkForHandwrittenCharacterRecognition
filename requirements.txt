@@ -1,3 +1,6 @@
 kagglehub
 polars
 numpy
+matplotlib
+scikit-learn
+seaborn
