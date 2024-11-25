@@ -24,11 +24,11 @@ def preprocess_df(df_path: str, lower_bound: int, upper_bound: int, row_limit: i
         has_header=False, 
         new_columns=COLUMNS
     )
-
+    
+    # here we map the class of each row into its repective letter and create a new column
     df = df.with_columns((pl.col("class") + SHIFT).map_elements(chr, return_dtype=pl.String).alias("letter"))
 
         
-    
     # Filter rows based on the class column (for letters M-V only)
     filtered_df = df.filter(
         (pl.col("class") >= lower_bound) & (pl.col("class") <= upper_bound)

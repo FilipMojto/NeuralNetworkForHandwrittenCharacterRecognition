@@ -1,6 +1,7 @@
 import argparse
 
 import numpy as np
+import numpy.typing as npt
 import polars as pl
 
 from model import NeuralNetwork
@@ -46,6 +47,11 @@ parser.add_argument("-a", "--accuracy-min", type=float, required=False, default=
 parser.add_argument("-e", "--epoch-max", type=int, required=False, default=DEF_EPOCH_MAX, help="User can set a maximum of epochs that will be carried out during model's training.")
 parser.add_argument("-l", "--learning-rate", type=float, required=False, default=DEF_LEARNING_RATE, help="User can set a custom learning rate of the model.")
 
+parser.add_argument("--plot-softmax", action='store_true', help="If true, softmax activation function is plotted.")
+parser.add_argument("--plot-loss", action='store_true', help="If true, loss function is plotted.")
+parser.add_argument("--plot-ROC", action='store_true', help="If true, ROC is plotted.")
+
+
 args = parser.parse_args()
 
 
@@ -68,13 +74,14 @@ def load_df(path: str):
     input_X = dataset[:, 1:-2].to_numpy()
     output_y = np.array([list(map(int, list(row))) for row in dataset["one_hot_encoding"].to_numpy()])
 
+
     return input_X, output_y
 
 
 if __name__ == "__main__":
 
     if args.preprocess:
-        print("preprocessing ...")
+        print("preprocessing ... ", end="")
         preprocess_df(df_path=INPUT_TRAIN_DF_FILE_PATH,
                       lower_bound=ord(args.lower_letter) - SHIFT, upper_bound=ord(args.upper_letter) - SHIFT,
                       row_limit=TRAINING_DF_LIMIT,
@@ -85,11 +92,12 @@ if __name__ == "__main__":
                       upper_bound=ord(args.upper_letter) - SHIFT,
                       row_limit=TESTING_DF_LIMIT, save_to_csv=True,
                       output_file=PREPROCESSED_TEST_DF_FILE_PATH)
-
-
+        
+        print("success!")
     
     # Load training data
     input_X, output_y = load_df(path=PREPROCESSED_TRAIN_DF_FILE_PATH)
+    
     # input_X = input_X / 1.0  # Normalize features to range [0, 1]
     
     # Load testing data
@@ -103,7 +111,12 @@ if __name__ == "__main__":
     model = NeuralNetwork(input_size, HIDDEN_LAYER_NEURONS, output_size)
     
 
-    train_neural_network(model, input_X, output_y, args.learning_rate, args.epoch_max, acc_limit=args.accuracy_min)
+    train_neural_network(model, input_X, output_y,
+                         args.learning_rate, args.epoch_max, acc_limit=args.accuracy_min,
+                         plt_loss=args.plot_loss,
+                         plt_softmax=args.plot_softmax)
     
     # Test the model
-    test_neural_network(model, test_X, test_y)
+    test_neural_network(model, test_X, test_y,
+                        plt_ROC=args.plot_ROC,
+                        plt_softmax=args.plot_softmax)
