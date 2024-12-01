@@ -1,4 +1,5 @@
 import polars as pl
+from argparse import ArgumentParser
 
 TRAINING_DF_FILE_PATH = './data/emnist-balanced-train.csv'
 TESTING_DF_FILE_PATH = './data/emnist-balanced-test.csv'
@@ -10,12 +11,30 @@ PREPROCESSED_TEST_DF_PATH = "./data/preprocessed-test.csv"
 LOWER_BOUND_LETTER = 'M'
 UPPER_BOUND_LETTER = 'V'
 SHIFT = 48
-TRAINING_DF_LIMIT = 4000
+DF_LIMIT = 4000
 TESTING_DF_LIMIT = 800
 COLUMNS = ['class'] + [f'pixel {i}' for i in range(784)]
 
 LOWER_BOUND = ord(LOWER_BOUND_LETTER) - SHIFT
 UPPER_BOUND = ord(UPPER_BOUND_LETTER) - SHIFT
+
+parser = ArgumentParser(
+    prog="Data Processing Script",
+    description="Effectively preprocessed data for Neural Network training."
+)
+
+# preprocessing params
+# parser.add_argument("-p", "--preprocess", action="store_true", help="If provided training&testing datasets are preprocessed before training.")
+
+parser.add_argument("--input", required=False, default=TRAINING_DF_FILE_PATH, help="A custom path to a training dataset csv file.")
+# parser.add_argument("--testing-dataset", required=False, default=INPUT_TEST_DF_FILE_PATH, help="A custom path to a testing dataset csv file.")
+parser.add_argument("--output", required=False, default=PREPROCESSED_TRAIN_DF_PATH)
+
+parser.add_argument("--limit", required=False, default=DF_LIMIT)
+
+parser.add_argument("--min-letter", type=str, required=False, default=LOWER_BOUND_LETTER, help="User can set the lower bound letter for preprocessing.")
+parser.add_argument("--max-letter", type=str, required=False, default=UPPER_BOUND_LETTER, help="User can set the upper bound letter for preprocessing.")
+
 
 def preprocess_df(df_path: str, lower_bound: int, upper_bound: int, row_limit: int, save_to_csv: bool = False, output_file: str = "./data/preprocessed_df.csv"):
     # Read the CSV file, treating the first row as data, not headers
@@ -124,3 +143,23 @@ def preprocess_df(df_path: str, lower_bound: int, upper_bound: int, row_limit: i
 
 # emnist_letters_train_df.write_csv(PREPROCESSED_TRAIN_DF_PATH)
 # emnist_letters_test_df.write_csv(PREPROCESSED_TEST_DF_PATH)
+
+
+if __name__ == "__main__":
+    args = parser.parse_args()
+    
+  
+    print("preprocessing ... ", end="")
+    preprocess_df(df_path=args.input,
+                    lower_bound=ord(args.min_letter) - SHIFT, upper_bound=ord(args.max_letter) - SHIFT,
+                    row_limit=args.limit,
+                    save_to_csv=True, output_file=args.output)
+    
+    # preprocess_df(df_path=args.testing_dataset,
+    #                 lower_bound=ord(args.min_letter) - SHIFT,
+    #                 upper_bound=ord(args.max_letter) - SHIFT,
+    #                 row_limit=TESTING_DF_LIMIT, save_to_csv=True,
+    #                 output_file=PREPROCESSED_TEST_DF_PATH)
+    
+    print("success!")
+    

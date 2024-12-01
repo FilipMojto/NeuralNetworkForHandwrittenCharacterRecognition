@@ -13,7 +13,7 @@ def accuracy(y_pred: npt.NDArray, y_true: npt.NDArray):
 
 
 def test_neural_network(model: NeuralNetwork, X_test: npt.NDArray, y_test: npt.NDArray,
-                        plt_softmax = False, plt_ROC = False):
+                        plt_softmax = True, plt_ROC = True):
     """
     Test the neural network's performance on test data.
     
@@ -27,7 +27,7 @@ def test_neural_network(model: NeuralNetwork, X_test: npt.NDArray, y_test: npt.N
     """
     # Forward propagation
     y_pred = model.forward(X_test)
-    
+    # print(y_pred)
     # Compute accuracy
     acc = accuracy(y_pred, y_test)
     
